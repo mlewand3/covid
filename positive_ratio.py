@@ -12,7 +12,8 @@ months_fmt = mdates.DateFormatter('%M')
 def get_values(text):
     first_val = text[text.find('arg: "') + len('arg: "'): text.find('},')]
     data = first_val[0: first_val.find('"')]
-    tests = first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_chorzy') - 1]
+    tests = first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1]
+    tests_l = first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1]
     positive = first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('},')]
     print(data, tests, positive)
     data2 = data.split('.')
@@ -30,7 +31,7 @@ response = requests.get(url)
 text = response.text.replace('null', '0')
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
-
+print(text[begin:end])
 text, d, r = get_values(text[begin:end])
 ratios = [r]
 datas= [d]
