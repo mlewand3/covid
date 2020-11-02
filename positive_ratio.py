@@ -15,7 +15,6 @@ def get_values(text):
     tests = first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1]
     tests_l = first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1]
     positive = first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('},')]
-    print(data, tests, positive)
     data2 = data.split('.')
     data = data2[2] + '-' + data2[1] + '-' + data2[0]
 
@@ -23,15 +22,18 @@ def get_values(text):
         ratio = 100*float(positive)/float(tests)
     else:
         ratio = 0
+    print(data, tests, positive, ratio)
+
     return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio
 
 
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
 response = requests.get(url)
 text = response.text.replace('null', '0')
+# print(text)
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
-print(text[begin:end])
+# print(text[begin:end])
 text, d, r = get_values(text[begin:end])
 ratios = [r]
 datas= [d]
