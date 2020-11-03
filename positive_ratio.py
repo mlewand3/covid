@@ -13,7 +13,7 @@ def get_values(text):
     first_val = text[text.find('arg: "') + len('arg: "'): text.find('},')]
     data = first_val[0: first_val.find('"')]
     tests = first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1]
-    tests_l = first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1]
+    tested_people = first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1]
     positive = first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('},')]
     data2 = data.split('.')
     data = data2[2] + '-' + data2[1] + '-' + data2[0]
@@ -22,9 +22,14 @@ def get_values(text):
         ratio = 100*float(positive)/float(tests)
     else:
         ratio = 0
-    print(data, tests, positive, ratio)
 
-    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio
+    if float(tested_people) != 0:
+        ratio_tested_people = 100*float(positive)/float(tested_people)
+    else:
+        ratio_tested_people = 0
+    print(data, tests, positive, ratio, ratio_tested_people)
+
+    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people
 
 
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
@@ -34,16 +39,19 @@ text = response.text.replace('null', '0')
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
 # print(text[begin:end])
-text, d, r = get_values(text[begin:end])
+text, d, r, r_tested_people = get_values(text[begin:end])
 ratios = [r]
 datas= [d]
 while len(text) > 10:
-    text, d, r = get_values(text)
+    text, d, r, r_tested_people = get_values(text)
     ratios.append(r)
     datas.append(d)
 
 
 fig, ax = plt.subplots()
+ax.set_xlabel('Data')
+ax.set_ylabel('Stosunek testów pozytywnych do wszystkich testów')
+
 data = [datas, ratios]
 ax.scatter(datas, ratios, s=4)
 
