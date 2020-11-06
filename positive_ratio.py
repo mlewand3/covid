@@ -33,7 +33,7 @@ def get_values(text):
 
 
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
-response = requests.get(url)
+response = requests.get(url, timeout=10000)
 text = response.text.replace('null', '0')
 # print(text)
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
