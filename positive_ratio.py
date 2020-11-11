@@ -29,7 +29,30 @@ def get_values(text):
         ratio_tested_people = 0
     print(data, tests, positive, ratio, ratio_tested_people)
 
-    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people
+    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people, tests
+
+
+def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label):
+    fig, ax = plt.subplots()
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+
+    # data = [datas, ratios]
+    ax.scatter(x_vals, y_vals, s=4)
+
+    # format the ticks
+    ax.xaxis.set_major_locator(dates.MonthLocator())
+    # 16 is a slight approximation since months differ in number of days.
+    ax.xaxis.set_minor_locator(dates.MonthLocator(bymonthday=16))
+
+    ax.xaxis.set_major_formatter(ticker.NullFormatter())
+    ax.xaxis.set_minor_formatter(dates.DateFormatter('%b'))
+
+    # round to nearest years.
+    datemin = np.datetime64(datas[0], 'D')
+    datemax = np.datetime64(datas[-1], 'D') + np.timedelta64(3, 'D')
+    ax.set_xlim(datemin, datemax)
+    fig.autofmt_xdate()
 
 
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
@@ -39,42 +62,22 @@ text = response.text.replace('null', '0')
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
 # print(text[begin:end])
-text, d, r, r_tested_people = get_values(text[begin:end])
+text, d, r, r_tested_people, tests = get_values(text[begin:end])
 ratios = [r]
 datas= [d]
+tests_array = [int(tests)]
 while len(text) > 10:
-    text, d, r, r_tested_people = get_values(text)
+    text, d, r, r_tested_people, tests = get_values(text)
     ratios.append(r)
     datas.append(d)
+    tests_array.append(tests)
 
 
-fig, ax = plt.subplots()
-ax.set_xlabel('Data')
-ax.set_ylabel('Stosunek testów pozytywnych do wszystkich testów')
 
-data = [datas, ratios]
-ax.scatter(datas, ratios, s=4)
 
-# format the ticks
-ax.xaxis.set_major_locator(dates.MonthLocator())
-# 16 is a slight approximation since months differ in number of days.
-ax.xaxis.set_minor_locator(dates.MonthLocator(bymonthday=16))
+draw_plot(datas, ratios, 'Data','Stosunek testów pozytywnych do wszystkich testów')
+draw_plot(datas, tests_array, 'Data', 'Liczba wykonanych testów')
+plt.show()
 
-ax.xaxis.set_major_formatter(ticker.NullFormatter())
-ax.xaxis.set_minor_formatter(dates.DateFormatter('%b'))
-
-# round to nearest years.
-datemin = np.datetime64(datas[0], 'D')
-datemax = np.datetime64(datas[-1], 'D') + np.timedelta64(3, 'D')
-ax.set_xlim(datemin, datemax)
-
-# format the coords message box
-# ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
-# ax.format_ydata = lambda x: '$%1.2f' % x  # format the price.
-# ax.grid(True)
-
-# rotates and right aligns the x labels, and moves the bottom of the
-# axes up to make room for them
-fig.autofmt_xdate()
 
 plt.show()
