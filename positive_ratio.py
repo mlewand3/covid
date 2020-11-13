@@ -5,26 +5,27 @@ import matplotlib.dates as mdates
 import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 
-years = mdates.YearLocator()   # every year
+years = mdates.YearLocator()  # every year
 months = mdates.MonthLocator()  # every month
 months_fmt = mdates.DateFormatter('%M')
+
 
 def get_values(text):
     first_val = text[text.find('arg: "') + len('arg: "'): text.find('},')]
     data = first_val[0: first_val.find('"')]
-    tests = first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1]
+    tests = int(first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1])
     tested_people = first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1]
     positive = first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('},')]
     data2 = data.split('.')
     data = data2[2] + '-' + data2[1] + '-' + data2[0]
 
     if float(tests) != 0:
-        ratio = 100*float(positive)/float(tests)
+        ratio = 100 * float(positive) / float(tests)
     else:
         ratio = 0
 
     if float(tested_people) != 0:
-        ratio_tested_people = 100*float(positive)/float(tested_people)
+        ratio_tested_people = 100 * float(positive) / float(tested_people)
     else:
         ratio_tested_people = 0
     print(data, tests, positive, ratio, ratio_tested_people)
@@ -38,7 +39,9 @@ def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label):
     ax.set_ylabel(y_axis_label)
 
     # data = [datas, ratios]
-    ax.scatter(x_vals, y_vals, s=4)
+    ax.scatter(x_vals, y_vals, color='blue', s=4, label='Surowe dane')
+    ax.plot(x_vals, moving_average(5, y_vals), color='red', alpha=1, label='Średnia')
+    plt.legend()
 
     # format the ticks
     ax.xaxis.set_major_locator(dates.MonthLocator())
@@ -55,6 +58,23 @@ def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label):
     fig.autofmt_xdate()
 
 
+def moving_average(step, arr):
+    averaged = []
+    for i, val in enumerate(arr):
+        if (i - step) > 0:
+            # print(arr[i-step:i+1])
+            subarray_avg = np.mean(arr[i - step:i + 1])
+        else:
+            # print(arr[0:i+1])
+            subarray_avg = np.mean(arr[0:i + 1])
+
+        averaged.append(subarray_avg)
+    # print(averaged)
+    # print(len(averaged))
+    # print(len(tests_array))
+    return averaged
+
+
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
 response = requests.get(url, timeout=10000)
 text = response.text.replace('null', '0')
@@ -64,7 +84,7 @@ end = text.find('var TstartData = ')
 # print(text[begin:end])
 text, d, r, r_tested_people, tests = get_values(text[begin:end])
 ratios = [r]
-datas= [d]
+datas = [d]
 tests_array = [int(tests)]
 while len(text) > 10:
     text, d, r, r_tested_people, tests = get_values(text)
@@ -72,12 +92,7 @@ while len(text) > 10:
     datas.append(d)
     tests_array.append(tests)
 
-
-
-
-draw_plot(datas, ratios, 'Data','Stosunek testów pozytywnych do wszystkich testów')
+draw_plot(datas, ratios, 'Data', 'Stosunek testów pozytywnych do wszystkich testów')
 draw_plot(datas, tests_array, 'Data', 'Liczba wykonanych testów')
-plt.show()
-
-
+# moving_average(0, tests_array)
 plt.show()
