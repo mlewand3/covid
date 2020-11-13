@@ -5,27 +5,23 @@ import matplotlib.dates as mdates
 import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 
-years = mdates.YearLocator()  # every year
-months = mdates.MonthLocator()  # every month
-months_fmt = mdates.DateFormatter('%M')
-
 
 def get_values(text):
     first_val = text[text.find('arg: "') + len('arg: "'): text.find('},')]
     data = first_val[0: first_val.find('"')]
     tests = int(first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1])
-    tested_people = first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1]
-    positive = first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('},')]
+    tested_people = int(first_val[first_val.find('p_testyl: ') + len('p_testyl: '): first_val.find('p_chorzy') - 1])
+    positive = int(first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('},')])
     data2 = data.split('.')
     data = data2[2] + '-' + data2[1] + '-' + data2[0]
 
-    if float(tests) != 0:
+    if tests != 0:
         ratio = 100 * float(positive) / float(tests)
     else:
         ratio = 0
 
-    if float(tested_people) != 0:
-        ratio_tested_people = 100 * float(positive) / float(tested_people)
+    if tested_people != 0:
+        ratio_tested_people = 100 * positive / tested_people
     else:
         ratio_tested_people = 0
     print(data, tests, positive, ratio, ratio_tested_people)
@@ -75,24 +71,31 @@ def moving_average(step, arr):
     return averaged
 
 
+years = mdates.YearLocator()  # every year
+months = mdates.MonthLocator()  # every month
+months_fmt = mdates.DateFormatter('%M')
+
+
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
 response = requests.get(url, timeout=10000)
 text = response.text.replace('null', '0')
-# print(text)
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
-# print(text[begin:end])
+
 text, d, r, r_tested_people, tests, positive = get_values(text[begin:end])
+
 ratios = [r]
 datas = [d]
-tests_array = [int(tests)]
-new_cases = [int(positive)]
+tests_array = [tests]
+new_cases = [positive]
+
+
 while len(text) > 10:
     text, d, r, r_tested_people, tests, positive = get_values(text)
     ratios.append(r)
     datas.append(d)
-    tests_array.append(int(tests))
-    new_cases.append(int(positive))
+    tests_array.append(tests)
+    new_cases.append(positive)
 
 draw_plot(datas, ratios, 'Data', 'Stosunek testów pozytywnych do wszystkich testów')
 draw_plot(datas, tests_array, 'Data', 'Liczba wykonanych testów')
