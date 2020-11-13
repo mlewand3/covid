@@ -30,7 +30,7 @@ def get_values(text):
         ratio_tested_people = 0
     print(data, tests, positive, ratio, ratio_tested_people)
 
-    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people, tests
+    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people, tests, positive
 
 
 def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label):
@@ -82,17 +82,20 @@ text = response.text.replace('null', '0')
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
 # print(text[begin:end])
-text, d, r, r_tested_people, tests = get_values(text[begin:end])
+text, d, r, r_tested_people, tests, positive = get_values(text[begin:end])
 ratios = [r]
 datas = [d]
 tests_array = [int(tests)]
+new_cases = [int(positive)]
 while len(text) > 10:
-    text, d, r, r_tested_people, tests = get_values(text)
+    text, d, r, r_tested_people, tests, positive = get_values(text)
     ratios.append(r)
     datas.append(d)
-    tests_array.append(tests)
+    tests_array.append(int(tests))
+    new_cases.append(int(positive))
 
 draw_plot(datas, ratios, 'Data', 'Stosunek testów pozytywnych do wszystkich testów')
 draw_plot(datas, tests_array, 'Data', 'Liczba wykonanych testów')
-# moving_average(0, tests_array)
+draw_plot(datas, new_cases, 'Data', 'Liczba wykrytych zakażeń')
+
 plt.show()
