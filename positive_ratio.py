@@ -29,15 +29,15 @@ def get_values(text):
     return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people, tests, positive
 
 
-def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label):
+def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label, label):
     fig, ax = plt.subplots()
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel(y_axis_label)
 
     # data = [datas, ratios]
     ax.scatter(x_vals, y_vals, color='blue', s=4, label='Surowe dane')
-    ax.plot(x_vals, moving_average(5, y_vals), color='red', alpha=1, label='Średnia')
-    plt.legend()
+    ax.plot(x_vals, moving_average(5, y_vals), color='red', alpha=1, label='Średnia z 5 dni')
+    plt.legend(loc=2)
 
     # format the ticks
     ax.xaxis.set_major_locator(dates.MonthLocator())
@@ -52,6 +52,7 @@ def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label):
     datemax = np.datetime64(datas[-1], 'D') + np.timedelta64(3, 'D')
     ax.set_xlim(datemin, datemax)
     fig.autofmt_xdate()
+    fig.suptitle(label)
 
 
 def moving_average(step, arr):
@@ -75,7 +76,6 @@ years = mdates.YearLocator()  # every year
 months = mdates.MonthLocator()  # every month
 months_fmt = mdates.DateFormatter('%M')
 
-
 url = "https://koronawirusunas.pl/u/polska-testy-nowe"
 response = requests.get(url, timeout=10000)
 text = response.text.replace('null', '0')
@@ -89,7 +89,6 @@ datas = [d]
 tests_array = [tests]
 new_cases = [positive]
 
-
 while len(text) > 10:
     text, d, r, r_tested_people, tests, positive = get_values(text)
     ratios.append(r)
@@ -97,8 +96,8 @@ while len(text) > 10:
     tests_array.append(tests)
     new_cases.append(positive)
 
-draw_plot(datas, ratios, 'Data', 'Stosunek testów pozytywnych do wszystkich testów')
-draw_plot(datas, tests_array, 'Data', 'Liczba wykonanych testów')
-draw_plot(datas, new_cases, 'Data', 'Liczba wykrytych zakażeń')
+draw_plot(datas, ratios, 'Data', 'Udział wyników pozytywnych [%]', 'Stosunek testów pozytywnych do wszystkich testów')
+draw_plot(datas, tests_array, 'Data', 'Liczba testów', 'Liczba dziennie wykonanych testów')
+draw_plot(datas, new_cases, 'Data', 'Liczba zakażeń', 'Liczba dziennie wykrytych zakażeń')
 
 plt.show()
