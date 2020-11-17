@@ -37,6 +37,7 @@ def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label, label):
     # data = [datas, ratios]
     ax.scatter(x_vals, y_vals, color='blue', s=4, label='Surowe dane')
     ax.plot(x_vals, moving_average(5, y_vals), color='red', alpha=1, label='Średnia z 5 dni')
+    plt.axvline(x=np.datetime64('2020-11-04', 'D'), label='Konferencja Morawieckiego ws lockdownu', c='black')
     plt.legend(loc=2)
 
     # format the ticks
