@@ -6,7 +6,7 @@ import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 
 
-def get_values(text):
+def get_tests_values(text):
     first_val = text[text.find('arg: "') + len('arg: "'): text.find('},')]
     data = first_val[0: first_val.find('"')]
     tests = int(first_val[first_val.find('p_testy: ') + len('p_testy: '): first_val.find('p_testyl') - 1])
@@ -29,8 +29,27 @@ def get_values(text):
     return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people, tests, positive
 
 
+def get_deaths_recovered_values(text):
+    first_val = text[text.find('arg: "') + len('arg: "'): text.find('},')]
+    data = first_val[0: first_val.find('"')]
+    sick = int(first_val[first_val.find('p_chorzy: ') + len('p_chorzy: '): first_val.find('p_zgony') - 1])
+    deaths = int(first_val[first_val.find('p_zgony: ') + len('p_zgony: '): first_val.find('p_wyleczeni') - 1])
+    recovered = int(first_val[first_val.find('p_wyleczeni: ') + len('p_wyleczeni: '): first_val.find('},')])
+    data_arr = data.split('.')
+    data = data_arr[2] + '-' + data_arr[1] + '-' + data_arr[0]
+
+    if recovered != 0:
+        death_recovered_ratio = 100 * float(deaths) / int(recovered)
+    else:
+        death_recovered_ratio = 0
+
+    print(data, sick, deaths, recovered, death_recovered_ratio)
+
+    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), death_recovered_ratio
+
+
 def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label, label):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel(y_axis_label)
 
@@ -39,7 +58,7 @@ def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label, label):
     ax.plot(x_vals, moving_average(5, y_vals), color='red', alpha=1, label='Średnia z 5 dni')
     plt.axvline(x=np.datetime64('2020-11-04', 'D'), label='Konferencja ws lockdownu', c='black', linestyle=':')
     plt.axvline(x=np.datetime64('2020-07-01', 'D'), label='Koronawirus "w odwrocie"', c='orange', linestyle=':')
-    plt.legend(loc=2)
+    plt.legend(bbox_to_anchor=(0., -0.4, 1., 0.), loc='lower left')
 
     # format the ticks
     ax.xaxis.set_major_locator(dates.MonthLocator())
@@ -55,6 +74,7 @@ def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label, label):
     ax.set_xlim(datemin, datemax)
     fig.autofmt_xdate()
     fig.suptitle(label)
+    plt.subplots_adjust(None, 0.27)
 
 
 def moving_average(step, arr):
@@ -84,7 +104,7 @@ text = response.text.replace('null', '0')
 begin = text.find('var Data_przyrost_testy = [') + len('var Data_przyrost_testy = [')
 end = text.find('var TstartData = ')
 
-text, d, r, r_tested_people, tests, positive = get_values(text[begin:end])
+text, d, r, r_tested_people, tests, positive = get_tests_values(text[begin:end])
 
 ratios = [r]
 datas = [d]
@@ -92,14 +112,31 @@ tests_array = [tests]
 new_cases = [positive]
 
 while len(text) > 10:
-    text, d, r, r_tested_people, tests, positive = get_values(text)
+    text, d, r, r_tested_people, tests, positive = get_tests_values(text)
     ratios.append(r)
     datas.append(d)
     tests_array.append(tests)
     new_cases.append(positive)
 
+url_deaths = "https://koronawirusunas.pl/u/polska-nowe"
+response = requests.get(url_deaths, timeout=10000)
+print(response.text)
+text = response.text.replace('null', '0')
+begin = text.find('var populationData = [') + len('var populationData = [')
+end = text.find('var startData = ')
+text, d, deaths_recovered_ratio = get_deaths_recovered_values(text[begin:end])
+dr_ratios = [deaths_recovered_ratio]
+datas2 = [d]
+
+while len(text) > 10:
+    text, d, deaths_recovered_ratio = get_deaths_recovered_values(text)
+    dr_ratios.append(deaths_recovered_ratio)
+    datas2.append(d)
+
 draw_plot(datas, ratios, 'Data', 'Udział wyników pozytywnych [%]', 'Stosunek testów pozytywnych do wszystkich testów')
 draw_plot(datas, tests_array, 'Data', 'Liczba testów', 'Liczba dziennie wykonanych testów')
 draw_plot(datas, new_cases, 'Data', 'Liczba zakażeń', 'Liczba dziennie wykrytych zakażeń')
+draw_plot(datas2, dr_ratios, 'Data', 'Liczba zmarłych / liczba wyleczonych',
+          'Stosunek liczby zmarłych do wyleczonych - dziennie')
 
 plt.show()
