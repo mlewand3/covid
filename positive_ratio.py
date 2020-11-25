@@ -120,7 +120,6 @@ while len(text) > 10:
 
 url_deaths = "https://koronawirusunas.pl/u/polska-nowe"
 response = requests.get(url_deaths, timeout=10000)
-print(response.text)
 text = response.text.replace('null', '0')
 begin = text.find('var populationData = [') + len('var populationData = [')
 end = text.find('var startData = ')
@@ -138,5 +137,6 @@ draw_plot(datas, tests_array, 'Data', 'Liczba testów', 'Liczba dziennie wykonan
 draw_plot(datas, new_cases, 'Data', 'Liczba zakażeń', 'Liczba dziennie wykrytych zakażeń')
 draw_plot(datas2, dr_ratios, 'Data', 'Liczba zmarłych / liczba wyleczonych',
           'Stosunek liczby zmarłych do wyleczonych - dziennie')
+print('Dane z', datas[-1], 'Liczba testów:', tests_array[-1], 'Liczba zakażeń:', new_cases[-1], 'Stosunek wyników pozytywnych:', ratios[-1], 'Stosunek zgonów do wyzdrowień:', dr_ratios[-1])
 
 plt.show()
