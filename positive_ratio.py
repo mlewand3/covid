@@ -45,7 +45,7 @@ def get_deaths_recovered_values(text):
 
     print(data, sick, deaths, recovered, death_recovered_ratio)
 
-    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), death_recovered_ratio
+    return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), death_recovered_ratio, deaths
 
 
 def draw_plot(x_vals, y_vals, x_axis_label, y_axis_label, label):
@@ -123,12 +123,12 @@ response = requests.get(url_deaths, timeout=10000)
 text = response.text.replace('null', '0')
 begin = text.find('var populationData = [') + len('var populationData = [')
 end = text.find('var startData = ')
-text, d, deaths_recovered_ratio = get_deaths_recovered_values(text[begin:end])
+text, d, deaths_recovered_ratio, deaths = get_deaths_recovered_values(text[begin:end])
 dr_ratios = [deaths_recovered_ratio]
 datas2 = [d]
 
 while len(text) > 10:
-    text, d, deaths_recovered_ratio = get_deaths_recovered_values(text)
+    text, d, deaths_recovered_ratio, deaths = get_deaths_recovered_values(text)
     dr_ratios.append(deaths_recovered_ratio)
     datas2.append(d)
 
@@ -137,6 +137,12 @@ draw_plot(datas, tests_array, 'Data', 'Liczba testów', 'Liczba dziennie wykonan
 draw_plot(datas, new_cases, 'Data', 'Liczba zakażeń', 'Liczba dziennie wykrytych zakażeń')
 draw_plot(datas2, dr_ratios, 'Data', 'Liczba zmarłych / liczba wyleczonych',
           'Stosunek liczby zmarłych do wyleczonych - dziennie')
-print('Dane z', datas[-1], 'Liczba testów:', tests_array[-1], 'Liczba zakażeń:', new_cases[-1], 'Stosunek wyników pozytywnych:', ratios[-1], 'Stosunek zgonów do wyzdrowień:', dr_ratios[-1])
+print('_________________________________')
+print('Dane z', datas[-1])
+print('Liczba testów:', tests_array[-1])
+print('Liczba zakażeń:', new_cases[-1])
+print('Liczba zgonów:', deaths)
+print('Stosunek wyników pozytywnych:', ratios[-1])
+print('Stosunek zgonów do wyzdrowień:', dr_ratios[-1])
 
 plt.show()
