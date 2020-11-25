@@ -111,6 +111,7 @@ datas = [d]
 tests_array = [tests]
 new_cases = [positive]
 
+
 while len(text) > 10:
     text, d, r, r_tested_people, tests, positive = get_tests_values(text)
     ratios.append(r)
@@ -125,23 +126,27 @@ begin = text.find('var populationData = [') + len('var populationData = [')
 end = text.find('var startData = ')
 text, d, deaths_recovered_ratio, deaths = get_deaths_recovered_values(text[begin:end])
 dr_ratios = [deaths_recovered_ratio]
+death_daily = [deaths]
 datas2 = [d]
 
 while len(text) > 10:
     text, d, deaths_recovered_ratio, deaths = get_deaths_recovered_values(text)
     dr_ratios.append(deaths_recovered_ratio)
     datas2.append(d)
+    death_daily.append(deaths)
 
 draw_plot(datas, ratios, 'Data', 'Udział wyników pozytywnych [%]', 'Stosunek testów pozytywnych do wszystkich testów')
 draw_plot(datas, tests_array, 'Data', 'Liczba testów', 'Liczba dziennie wykonanych testów')
 draw_plot(datas, new_cases, 'Data', 'Liczba zakażeń', 'Liczba dziennie wykrytych zakażeń')
 draw_plot(datas2, dr_ratios, 'Data', 'Liczba zmarłych / liczba wyleczonych',
           'Stosunek liczby zmarłych do wyleczonych - dziennie')
+draw_plot(datas2, death_daily, 'Data', 'Liczba zgonów',
+          'Liczba zgonów - dziennie')
 print('_________________________________')
 print('Dane z', datas[-1])
 print('Liczba testów:', tests_array[-1])
 print('Liczba zakażeń:', new_cases[-1])
-print('Liczba zgonów:', deaths)
+print('Liczba zgonów:', death_daily[-1])
 print('Stosunek wyników pozytywnych:', ratios[-1])
 print('Stosunek zgonów do wyzdrowień:', dr_ratios[-1])
 
