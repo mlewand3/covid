@@ -112,6 +112,8 @@ dr_ratios = [deaths_recovered_ratio]
 death_daily = [deaths]
 datas2 = [d]
 
+
+# Why hardcoded 10?
 while len(text) > 10:
     text, d, deaths_recovered_ratio, deaths = get_deaths_recovered_values(text)
     dr_ratios.append(deaths_recovered_ratio)
