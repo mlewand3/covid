@@ -25,7 +25,7 @@ def get_tests_values(text):
         ratio_tested_people = 100.0 * positive / tested_people
     else:
         ratio_tested_people = 0.0
-    print(data, tests, positive, ratio, ratio_tested_people)
+    print(f'{data=} {tests=} {positive=} {ratio=:.4f} {ratio_tested_people=:.4f}')
 
     return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), ratio, ratio_tested_people, tests, positive
 
@@ -44,7 +44,7 @@ def get_deaths_recovered_values(text):
     else:
         death_recovered_ratio = 0
 
-    print(data, sick, deaths, recovered, death_recovered_ratio)
+    print(f'{data=} {sick=} {deaths=} {recovered=} {death_recovered_ratio=:.4f}')
 
     return text[text.find('},') + len('},'):], np.datetime64(data, 'D'), death_recovered_ratio, deaths
 
@@ -72,7 +72,6 @@ def draw_plot(x_vals, y_vals, x_axis_label: str, y_axis_label: str, label: str, 
     datemax = np.datetime64(datas[-1], 'D') + np.timedelta64(3, 'D')
     ax.set_xlim(datemin, datemax)
     ax.set_title(label)
-
 
 
 def moving_average(arr, step=5):
@@ -141,12 +140,8 @@ txt = (f'Dane z {datas[-1]}\n'
 
 axes[2, 1].text(0.1, 0.9, txt, verticalalignment='top', transform=axes[2, 1].transAxes)
 
-#plt.subplots_adjust(None, 0.27)
-
 now = str(datetime.datetime.now())
 for c in [':', '.', '-']:
     now = now.replace(c, '')
 now = now.replace(' ', '_')
 plt.savefig(f'corona_{now}.png', bbox_inches='tight')
-#plt.show()
-
